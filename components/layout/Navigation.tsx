@@ -1,44 +1,55 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { ShoppingCart } from 'lucide-react'; //shopping cart icon
+import Image from 'next/image';
 
 
 export default function Navigation() {
 
+    const pathname = usePathname(); // gets curr page
 
-  const navLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/shop', label: 'Shop' },
-    { href: '/about', label: 'About' },
-    { href: '/contact', label: 'Contact' },
-  ];
+    const navLinks = [
+        { href: '/', label: 'Home' },
+        { href: '/shop', label: 'Shop' },
+        { href: '/about', label: 'About' },
+        { href: '/contact', label: 'Contact' },
+    ];
 
-  return (
-    <nav className="sticky top-0 py-4">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between">
-          {/*logo*/}
-          <Link href="/" className="flex items-center space-x-2">
-            <div>logo</div>
-            <span>Beacon Street Gardens LLC</span>
-          </Link>
+    return (
+        <nav className="sticky top-0 z-50 bg-[var(--header)] border-b border-gray-200 shadow-sm h-[60px]">
+            <div className="mx-auto px-8 py-2 h-full flex items-center">
+                <div className="flex items-center justify-between w-full">
+                {/*logo*/}
+                <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                        <Image src="/logo-new.png" alt="Logo" width={95} height={40} className="rounded-full" />
+                        <span className="text-[36px] font-MEDIUM text-[var(--text)]">
+                            Beacon Street Gardens <span className="text-[17px] font-normal">LLC</span>
+                        </span>
+                    </Link>
 
-          {/*nav links*/}
-          <div className="flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href}>
-                {link.label}
-              </Link>
-            ))}
+                {/*nav links*/}
+                <div className="flex items-center gap-8">
+                    {navLinks.map((link) => (
+                    <Link key={link.href} href={link.href} className={`relative text-[20px] font-medium transition-colors ${pathname === link.href ? 'text-[var(--rust)] ' : 'text-[var(--text)] hover:text-[var(--rust)]'}`}>
+                        {link.label}
+                        {pathname === link.href && (
+                            <span className="absolute -bottom-1 left-0 w-full h-[1.5px] bg-[var(--rust)] animate-[slideIn_0.3s_ease-in-out]" />
+                        )}
+                    </Link>
+                    ))}
 
-            {/*cart icon*/}
-            <Link href="/cart" className="relative">
-              <ShoppingCart size={24} />
-            </Link>
-          </div>
+                    {/*cart icon*/}
+                    <Link href="/cart" className=" relative text-[var(--text)] hover:text-[var(--rust)] transition-colors">
+                        <ShoppingCart size={25} />
+                    </Link>
+                </div>
+
+
+
+            </div>
         </div>
-      </div>
-    </nav>
+        </nav>
   );
 }
