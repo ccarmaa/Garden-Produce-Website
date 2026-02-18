@@ -1,8 +1,7 @@
+import Home from '../components/Home'
 
-export default function Home() {
+export default function Page() {
   return (
-    <div>
-      <a href="/shop">See What's Available</a>
-    </div>
+    <Home />
   );
 }
