@@ -4,9 +4,9 @@ import Link from 'next/link'
 
 export default function Home() {
     const categories = [
-        { id: 1, href: '/shop', label: 'Vegetables', },
-        { id: 2, href: '/shop', label: 'Flowers' },
-        { id: 3, href: '/shop', label: 'Plants' },
+        { id: 1, href: '/shop?category=Vegetables', label: 'Vegetables', },
+        { id: 2, href: '/shop?category=Flowers', label: 'Flowers' },
+        { id: 3, href: '/shop?category=Plants', label: 'Plants' },
         { id: 4, href: '/shop', label: 'All Products' },
     ];
 
