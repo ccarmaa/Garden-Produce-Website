@@ -3,6 +3,7 @@
 :root {
   --header: #F8F2F2;
   --footer: #E4DBD6;
+  --secondary: #EAE3E0;
   --text: #4D5143;
   --rust: #B8604C;
   --teal: #678081;
@@ -16,6 +17,8 @@
   --hero-square: #EFE9E8;
   --lines: #CEC7C4;
   --input-border: #9D9389;
+  --dark-rust: #8b493a;
+
 }
 
 
