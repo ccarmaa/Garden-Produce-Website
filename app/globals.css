@@ -6,7 +6,19 @@
   --secondary: #EAE3E0;
   --text: #4D5143;
   --rust: #B8604C;
+  --teal: #678081;
+  --teal-hover: #4F6162;
+  --card-bg: #EAE3E0;     
+  --card-border: #D6CFCC;      
+  --disabled-bg: #D9D1CE;       
+  --disabled-text: #6B6662;   
+  --button-gray: #C5BCB8;     
+  --button-gray-hover: #B0A7A3;
+  --hero-square: #EFE9E8;
+  --lines: #CEC7C4;
+  --input-border: #9D9389;
   --dark-rust: #8b493a;
+
 }
 
 
@@ -15,7 +27,7 @@ body {
   font-family: var(--font-playfair), serif;
   line-height: 1.6;
   color: var(--text);
-  background-color: var(--header);
+  background-color: #F8F2F2;
 }
 
 html {
