@@ -2,9 +2,10 @@
 
 import ProductCard from '@/components/shop/ProductCard';
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function ShopPage() {
-// mock data
+// mock data, replace w db stuff later
 const allProducts = [
   { 
     id: '1', 
@@ -127,9 +128,13 @@ const allProducts = [
     stock: 0
   },
 ];
+  const searchParams = useSearchParams();
 
   // filter states
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
+      const category = searchParams.get('category');
+      return category ? [category] : [];
+  });  
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedAvailability, setSelectedAvailability] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
