@@ -3,69 +3,81 @@
 import ProductCard from '@/components/shop/ProductCard';
 import { useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { ca } from 'date-fns/locale';
 
 export default function ShopPage() {
 // mock data, replace w db stuff later
 const allProducts = [
   { 
     id: '1', 
-    name: 'Bell Peppers', 
+    name: 'All features and low stock', 
     price: 2.50, 
     image_url: '', 
     availability: 'Ready Now' as const, 
     category: 'Vegetables', 
     type: ['Full Sun'],
-    stock: 5  
+    stock: 5,
+    sunlight: 'Full Sun',
+    water: 'Water when top inch of soil is dry',
+    careNotes: 'Harvest when peppers are firm and reach desired color'
   },
   { 
     id: '2', 
-    name: 'Cherry Tomato Seedlings', 
+    name: 'Only Sunlight', 
     price: 1.60, 
     image_url: '', 
     availability: 'Ready Now' as const, 
     category: 'Vegetables', 
     type: ['Full Sun', 'Seedlings'],
-    stock: 10  
+    stock: 10 ,
+    sunlight: 'Full Sun',
   },
   { 
     id: '3', 
-    name: 'Basil Plant', 
+    name: 'Just Water', 
     price: 3.00, 
     image_url: '', 
     availability: 'Coming Soon' as const, 
     category: 'Plants', 
     type: ['Partial Shade'],
-    stock: 0  
+    stock: 0 ,
+    water: 'Water when top inch of soil is dry',
   },
   { 
     id: '4', 
-    name: 'Mixed Flowers', 
+    name: 'Care Notes Only', 
     price: 4.50, 
     image_url: '', 
     availability: 'Ready Now' as const, 
     category: 'Flowers', 
     type: ['Full Sun'],
-    stock: 25  
+    stock: 25  ,
+    careNotes: 'Prune spent blooms to encourage new growth'
   },
   { 
     id: '5', 
-    name: 'Lettuce', 
+    name: 'Care Notes and Sunlight', 
     price: 2.00, 
     image_url: '', 
     availability: 'Out of Stock' as const, 
     category: 'Vegetables', 
     type: ['Shade'],
+    sunlight: 'Partial Shade',
+    careNotes: 'Trim dead stems and fertilize monthly for healthy growth',
     stock: 0  
   },
   { 
     id: '6', 
-    name: 'Herbs Bundle', 
+    name: 'Long Care notes', 
     price: 5.00, 
     image_url: '', 
     availability: 'Ready Now' as const, 
     category: 'Plants', 
     type: ['Partial Shade'],
-    stock: 12
+    stock: 12,
+    sunlight: 'Partial Shade',
+    water: 'Keep soil consistently moist but not waterlogged',
+    careNotes: 'This is a plant that has a very long care note. It needs to be watered every day and fertilized every week. It also needs to be pruned regularly to keep it healthy and looking its best. Make sure to provide it with plenty of sunlight and watch out for pests that may try to attack it.'
   },
   { 
     id: '7', 
