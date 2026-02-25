@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useEffect } from 'react';
-import { X } from 'lucide-react';
+import Image from "next/image";
+import { useEffect } from "react";
+import { X } from "lucide-react";
 
 interface ProductModalProps {
   id: string;
   name: string;
   price: number;
   image_url: string;
-  availability: 'Ready Now' | 'Coming Soon' | 'Out of Stock';
+  availability: "Ready Now" | "Coming Soon" | "Out of Stock";
   stock: number;
   quantity: number;
   onClose: () => void;
@@ -36,22 +36,24 @@ export default function ProductModal({
   water,
   careNotes,
 }: ProductModalProps) {
-  const isAvailable = availability === 'Ready Now' && stock > 0;
-  const displayAvailability = stock === 0 ? 'Out of Stock' : availability;
+  const isAvailable = availability === "Ready Now" && stock > 0;
+  const displayAvailability = stock === 0 ? "Out of Stock" : availability;
 
   // close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === "Escape") onClose();
     };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
   // prevent background scroll while modal is open
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, []);
 
   return (
@@ -79,67 +81,82 @@ export default function ProductModal({
             <Image src={image_url} alt={name} fill className="object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Image src="/no_item.svg" alt="No Item" width={100} height={100} className="opacity-40" />
+              <Image
+                src="/no_item.svg"
+                alt="No Item"
+                width={100}
+                height={100}
+                className="opacity-40"
+              />
             </div>
           )}
 
           {/* availability badge overlaid on image */}
-          <span className={`absolute bottom-3 left-3 text-xs font-medium px-2.5 py-1 rounded-full ${
-            availability === 'Ready Now' && stock > 0
-              ? 'bg-[var(--teal)] text-white'
-              : 'bg-[var(--disabled-bg)] text-[var(--disabled-text)]'
-          }`}>
+          <span
+            className={`absolute bottom-3 left-3 text-xs font-medium px-2.5 py-1 rounded-full ${
+              availability === "Ready Now" && stock > 0
+                ? "bg-[var(--teal)] text-white"
+                : "bg-[var(--disabled-bg)] text-[var(--disabled-text)]"
+            }`}
+          >
             {displayAvailability}
           </span>
         </div>
 
         {/* content */}
         <div className="p-6">
-          <h2 className="text-2xl font-semibold text-[var(--text)] mb-1">{name}</h2>
+          <h2 className="text-2xl font-semibold text-[var(--text)] mb-1">
+            {name}
+          </h2>
 
           <p className="text-xl font-medium text-[var(--text)] mb-4">
             {price > 0 ? (
-              <>${price.toFixed(2)} <span className="text-sm font-normal">each</span></>
+              <>
+                ${price.toFixed(2)}{" "}
+                <span className="text-sm font-normal">each</span>
+              </>
             ) : (
-              <span className="text-sm text-[var(--input-border)]">Price TBD</span>
+              <span className="text-sm text-[var(--input-border)]">
+                Price TBD
+              </span>
             )}
           </p>
 
           {/* divider */}
           <div className="border-t border-[var(--card-border)] mb-4" />
 
-            {/* care info — only shows if the field exists */}
-            {(sunlight || water || careNotes) && (
+          {/* care info — only shows if the field exists */}
+          {(sunlight || water || careNotes) && (
             <div className="mb-4 space-y-2">
-                {sunlight && (
+              {sunlight && (
                 <div className="flex items-center gap-2 text-sm text-[var(--text)]">
-                    <span className="text-base">☀︎</span>
-                    <span className="font-medium">Sunlight:</span>
-                    <span>{sunlight}</span>
+                  <span className="text-base">☀︎</span>
+                  <span className="font-medium">Sunlight:</span>
+                  <span>{sunlight}</span>
                 </div>
-                )}
-                {water && (
+              )}
+              {water && (
                 <div className="flex items-center gap-2 text-sm text-[var(--text)]">
-                    <span className="text-base">🌨</span>
-                    <span className="font-medium">Water:</span>
-                    <span>{water}</span>
+                  <span className="text-base">🌨</span>
+                  <span className="font-medium">Water:</span>
+                  <span>{water}</span>
                 </div>
-                )}
-                {careNotes && (
-                <div className={`pt-1 text-sm text-[var(--text)] ${!sunlight && !water ? '' : 'border-t border-[var(--card-border)] pt-4 '}`}>
-                    <span className="font-medium">Care notes: </span>
-                    {careNotes}
+              )}
+              {careNotes && (
+                <div
+                  className={`pt-1 text-sm text-[var(--text)] ${!sunlight && !water ? "" : "border-t border-[var(--card-border)] pt-4 "}`}
+                >
+                  <span className="font-medium">Care notes: </span>
+                  {careNotes}
                 </div>
-                )}
+              )}
             </div>
-            )}
-
-
+          )}
 
           {/* stock info */}
           <div className="flex items-center justify-between mb-5">
             <span className="text-sm text-[var(--input-border)]">
-              {stock > 0 ? `${stock} available` : 'None available'}
+              {stock > 0 ? `${stock} available` : "None available"}
             </span>
           </div>
 
@@ -150,7 +167,7 @@ export default function ProductModal({
                 onClick={onReserve}
                 className="w-full bg-[var(--teal)] hover:bg-[var(--teal-hover)] text-white py-2.5 px-3 rounded-md transition-colors font-medium"
               >
-                Reserve
+                Add to Cart
               </button>
             ) : (
               <div className="flex items-center justify-center gap-3">
@@ -168,8 +185,8 @@ export default function ProductModal({
                   disabled={quantity >= stock}
                   className={`w-10 h-10 rounded-md flex items-center justify-center text-xl font-bold transition-colors ${
                     quantity >= stock
-                      ? 'bg-[var(--button-gray)] text-white cursor-not-allowed opacity-50'
-                      : 'bg-[var(--teal)] hover:bg-[var(--teal-hover)] text-white'
+                      ? "bg-[var(--button-gray)] text-white cursor-not-allowed opacity-50"
+                      : "bg-[var(--teal)] hover:bg-[var(--teal-hover)] text-white"
                   }`}
                 >
                   +
