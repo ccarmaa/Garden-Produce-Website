@@ -7,7 +7,7 @@ import { Instagram } from 'lucide-react';
 const contactStyles = {
   h2: "text-xl font-semibold",
   infoSpan: "flex gap-4 items-center",
-  label: "block text-xl font-semibold mb-1",
+  label: "block text-lg font-semibold mb-1",
   input: "w-full mb-6 bg-(--header) border border-gray-300 rounded-sm shadow-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-(--input-border)"
 }
 
@@ -19,19 +19,24 @@ const DecLine = () => (
 
 export default function ContactPage() {
 
+  /* TODO: Handle form submission
+     - validate input
+     - set error state
+     - use Web3Forms to send email?
+  */
   function submitForm(){
     alert("form submitted");
   }
 
   return (
-    <main>
+    <div className="bg-(--header)">
       <h1 className="text-3xl font-medium text-center my-6">Contact</h1>
       {/* <hr className="w-9/10 mx-auto border-(--card-border) mb-5"></hr> */}
       <hr className="border-0 h-[2px] bg-gradient-to-r from-transparent via-(--card-border) to-transparent" />
-      <div className="relative flex max-w-6xl mx-auto my-8">
+      <div className="relative flex max-w-5xl mx-auto my-8">
         {/* Contact form */}
         <div className="relative w-1/2">
-          <Form action={submitForm} className="max-w-lg mx-auto p-6 bg-(--secondary) shadow-md rounded-lg">
+          <Form action={submitForm} className="max-w-md mx-auto p-6 bg-(--secondary) shadow-md rounded-lg">
             {/* Name */}
             <label htmlFor="senderName" className={`${contactStyles.label}`}>Name</label>
             <input type="text" name="senderName" className={`${contactStyles.input}`} />
@@ -49,7 +54,7 @@ export default function ContactPage() {
         </div>
 
         {/* Store Information */}
-        <div className="relative w-1/2 max-w-lg mx-auto p-6 bg-(--secondary) shadow-md rounded-lg space-y-1">
+        <div className="relative w-1/2 max-w-md mx-auto p-6 bg-(--secondary) shadow-md rounded-lg space-y-1">
           <span className={`${contactStyles.infoSpan}`}>
             <h2 className={`${contactStyles.h2}`}>Email</h2>
             <DecLine />
@@ -85,6 +90,6 @@ export default function ContactPage() {
           </span>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
