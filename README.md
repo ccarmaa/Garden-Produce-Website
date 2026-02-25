@@ -1,25 +1,12 @@
 **prereq:**
-- make sure Node.js is installed (latest version works)
+- Node.js (version 18 or higher)
+- Git ofc
 
+---
 
-**to install dependencies:**
-
-run inside of gpw folder
-```bash
-npm install
-```
-
-  
-
-**to run dev server**
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-then open http://localhost:3000
+**setup**
+1. Clone the repo 
+2. Paste the the .env.local file in main folder (not currently applicable)
+3. Run npm install
+4. Run npm run dev
+5. Open http://localhost:3000
