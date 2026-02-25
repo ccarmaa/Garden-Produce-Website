@@ -55,7 +55,7 @@ export default function Home() {
             <h2 className="text-3xl mb-12 font-medium">What's New at the Garden?</h2>
             <div className="flex flex-col mx-[3vw] gap-6">
                 {blogPosts.map((post) => (
-                    <div className="flex min-h-64 shadow-lg shadow-(--rust) border border-(--footer) rounded-xl p-8 text-left gap-6">
+                    <div key={post.id} className="flex min-h-64 shadow-lg shadow-(--rust) border border-(--footer) rounded-xl p-8 text-left gap-6">
                         <div className="relative w-1/4 h-auto">
                             <Image src={post.image} alt="garden photo" fill className="object-cover rounded-sm"></Image>
                         </div>
