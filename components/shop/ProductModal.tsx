@@ -19,6 +19,8 @@ interface ProductModalProps {
   sunlight?: string;
   water?: string;
   careNotes?: string;
+  soil?: string;
+  description?: string;
 }
 
 export default function ProductModal({
@@ -35,6 +37,8 @@ export default function ProductModal({
   sunlight,
   water,
   careNotes,
+  soil,
+  description,
 }: ProductModalProps) {
   const isAvailable = availability === "Ready Now" && stock > 0;
   const displayAvailability = stock === 0 ? "Out of Stock" : availability;
@@ -124,14 +128,21 @@ export default function ProductModal({
 
           {/* divider */}
           <div className="border-t border-[var(--card-border)] mb-4" />
+            {/* description */}
+            {description && (
+              <p className="text-sm text-[var(--input-border)] italic mb-4">
+                {description}
+              </p>
+            )}
+
 
           {/* care info — only shows if the field exists */}
-          {(sunlight || water || careNotes) && (
+          {(sunlight || water || soil || careNotes) && (
             <div className="mb-4 space-y-2">
               {sunlight && (
                 <div className="flex items-center gap-2 text-sm text-[var(--text)]">
                   <span className="text-base">☀︎</span>
-                  <span className="font-medium">Sunlight:</span>
+                  <span className="font-medium px-0.75">Sunlight:</span>
                   <span>{sunlight}</span>
                 </div>
               )}
@@ -140,6 +151,14 @@ export default function ProductModal({
                   <span className="text-base">🌨</span>
                   <span className="font-medium">Water:</span>
                   <span>{water}</span>
+                </div>
+              )}
+              {soil && (
+                <div className="flex items-center gap-2 text-sm text-[var(--text)]">
+
+                  <Image src='/sprout_info.png' alt='soil icon' width={15} height={15}/>
+                  <span className="font-medium px-0.5">Soil:</span>
+                  <span>{soil}</span>
                 </div>
               )}
               {careNotes && (

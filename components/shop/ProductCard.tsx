@@ -15,6 +15,8 @@ interface ProductCardProps {
   sunlight?: string;
   water?: string;
   careNotes?: string;
+  soil?: string;
+  description?: string;
 }
 
 export default function ProductCard({
@@ -27,6 +29,8 @@ export default function ProductCard({
   sunlight,
   water,
   careNotes,
+  soil,
+  description,
 }: ProductCardProps) {
   const { items, addItem, updateQuantity } = useCartStore();
   const cartItem = items.find((i) => i.id === id);
@@ -165,6 +169,8 @@ export default function ProductCard({
           sunlight={sunlight}
           water={water}
           careNotes={careNotes}
+          soil={soil}
+          description={description}
         />
       )}
     </>
