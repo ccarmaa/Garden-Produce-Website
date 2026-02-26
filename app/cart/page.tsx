@@ -4,23 +4,20 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { X, Info, Snail } from 'lucide-react';
+import { useCartStore } from '@/lib/store/cartStore';
 
-// mock cart items for testing
-const mockCartItems = [
-  { id: '1', name: 'Bell Peppers', price: 2.50, quantity: 2, image_url: '' },
-  { id: '2', name: 'Mixed Flowers', price: 4.50, quantity: 1, image_url: '' },
-  { id: '3', name: 'Herbs Bundle', price: 5.00, quantity: 3, image_url: '' },
-];
+
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState(mockCartItems);
+  
   const [dayTimes, setDayTimes] = useState<Record<string, string>>({});
   const [contactPreference, setContactPreference] = useState<string[]>([]);
   const [form, setForm] = useState({ name: '', email: '', phone: '' });
   const [orderNotes, setOrderNotes] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const { items: cartItems, removeItem, updateQuantity, clearCart } = useCartStore();
 
   const selectedDays = Object.keys(dayTimes);
   const canSubmit = form.name && (form.email || form.phone);
@@ -46,22 +43,16 @@ export default function CartPage() {
   );
   };
 
-  const updateQuantity = (id: string, delta: number) => {
-    setCartItems(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item
-      ).filter(item => item.quantity > 0)
-    );
-  };
-
-  const removeItem = (id: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
+  const handleQuantityChange = (id: string, delta: number) => {
+    const item = cartItems.find(i => i.id === id);
+    if (item) updateQuantity(id, item.quantity + delta);
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const handleSubmit = () => {
     if (!canSubmit) return;
+    clearCart();
     setSubmitted(true);
   };
 
@@ -140,14 +131,14 @@ export default function CartPage() {
                   {/* quantity adjuster */}
                   <div className="flex items-center gap-1.5">
                     <button
-                      onClick={() => updateQuantity(item.id, -1)}
+                      onClick={() => handleQuantityChange(item.id, -1)}
                       className="w-6 h-6 bg-[var(--button-gray)] hover:bg-[var(--button-gray-hover)] rounded flex items-center justify-center text-sm font-bold text-white transition-colors"
                     >
                       −
                     </button>
                     <span className="w-5 text-center text-sm font-semibold text-[var(--text)]">{item.quantity}</span>
                     <button
-                      onClick={() => updateQuantity(item.id, 1)}
+                      onClick={() => handleQuantityChange(item.id, 1)}
                       className="w-6 h-6 bg-[var(--teal)] hover:bg-[var(--teal-hover)] rounded flex items-center justify-center text-sm font-bold text-white transition-colors"
                     >
                       +
