@@ -19,7 +19,9 @@ const allProducts = [
     stock: 5,
     sunlight: 'Full Sun',
     water: 'Water when top inch of soil is dry',
-    careNotes: 'Harvest when peppers are firm and reach desired color'
+    careNotes: 'Harvest when peppers are firm and reach desired color',
+    soil: 'Well-draining soil rich in organic matter',
+    description: 'This is a plant that has a lot of features and also low stock. It needs to be watered every day and fertilized every week. It also needs to be pruned regularly to keep it healthy and looking its best. Make sure to provide it with plenty of sunlight and watch out for pests that may try to attack it.'
   },
   { 
     id: '2', 

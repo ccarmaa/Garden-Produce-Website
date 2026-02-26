@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ShoppingCart } from 'lucide-react'; //shopping cart icon
 import Image from 'next/image';
+import { useCartStore } from '@/lib/store/cartStore';
 
 
 export default function Navigation() {
@@ -16,6 +17,10 @@ export default function Navigation() {
         { href: '/about', label: 'About' },
         { href: '/contact', label: 'Contact' },
     ];
+
+    const totalItems = useCartStore((state) =>
+        state.items.reduce((sum, i) => sum + i.quantity, 0)
+    );
 
     return (
         <nav className="sticky top-0 z-50 bg-[var(--header)] border-b border-gray-200 shadow-sm h-[60px]">
@@ -43,6 +48,11 @@ export default function Navigation() {
                     {/*cart icon*/}
                     <Link href="/cart" className=" relative text-[var(--text)] hover:text-[var(--rust)] transition-colors">
                         <ShoppingCart size={22} />
+                        {totalItems > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-[var(--rust)] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-medium leading-none pb-px">
+                            {totalItems}
+                            </span>
+                        )}
                     </Link>
                 </div>
 

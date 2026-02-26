@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import ProductModal from "./ProductModal";
+import { useCartStore } from "@/lib/store/cartStore";
 
 interface ProductCardProps {
   id: string;
@@ -14,6 +15,8 @@ interface ProductCardProps {
   sunlight?: string;
   water?: string;
   careNotes?: string;
+  soil?: string;
+  description?: string;
 }
 
 export default function ProductCard({
@@ -26,26 +29,17 @@ export default function ProductCard({
   sunlight,
   water,
   careNotes,
+  soil,
+  description,
 }: ProductCardProps) {
-  const [quantity, setQuantity] = useState(0);
+  const { items, addItem, updateQuantity } = useCartStore();
+  const cartItem = items.find((i) => i.id === id);
+  const quantity = cartItem?.quantity ?? 0;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleReserve = () => {
-    setQuantity(1);
-  };
-
-  const handleIncrease = () => {
-    if (quantity < stock) {
-      // check stock limit
-      setQuantity(quantity + 1);
-    }
-  };
-
-  const handleDecrease = () => {
-    if (quantity > 0) {
-      setQuantity(quantity - 1);
-    }
-  };
+  const handleReserve = () => addItem({ id, name, price, image_url, stock });
+  const handleIncrease = () => updateQuantity(id, quantity + 1);
+  const handleDecrease = () => updateQuantity(id, quantity - 1);
 
   // set to "Out of Stock" if stock is 0
   const isAvailable = availability === "Ready Now" && stock > 0;
@@ -175,6 +169,8 @@ export default function ProductCard({
           sunlight={sunlight}
           water={water}
           careNotes={careNotes}
+          soil={soil}
+          description={description}
         />
       )}
     </>
