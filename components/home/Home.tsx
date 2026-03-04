@@ -64,10 +64,11 @@ export default function Home() {
         {/* Home banner */}
         <div className="relative flex items-center h-[35vh]">
             <div className="z-1">
-                <Image src={bannerSrc} alt="image of flowers" fill style={{objectFit: 'cover'}} />
+                <Image src={bannerSrc} alt="image of seedlings" fill style={{objectFit: 'cover'}} />
             </div>
             <div className="z-2 sm:w-[80vw] md:w-[40vw] h-7/10 ml-[3vw] p-2 bg-(--header)" >
                 <div className="relative flex flex-col w-full h-full p-2 justify-center items-center gap-2 bg-(--header) border-2 border-(--footer)">
+                    <Image src="/logo_beaconstgardens_noback.png" alt="Logo" width={150} height={173}/>
                     <h1 className="text-3xl font-semibold">Beacon Street Gardens</h1>
                     <p className="">Welcoming tagline</p>
                 </div>

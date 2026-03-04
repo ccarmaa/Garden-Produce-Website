@@ -28,7 +28,8 @@ export default function Navigation() {
                 <div className="flex items-center justify-between w-full">
                 {/*logo*/}
                 <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-                        <Image src="/logo_beaconstgardens.png" alt="Logo" width={60} height={60}/>
+                        {/* <Image src="/logo_beaconstgardens_icon.png" alt="Logo" width={150} height={173}/> */}
+                        <Image src="/logo_beaconstgardens_icon_noback.png" alt="Logo" width={52} height={60}/>
                         <span className="text-2xl font-medium text-[var(--text)]">
                             Beacon Street Gardens <span className="text-sm font-normal">LLC</span>
                         </span>
