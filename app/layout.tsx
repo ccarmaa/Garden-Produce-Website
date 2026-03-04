@@ -18,7 +18,7 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: "Beacon Street Garden LLC",
+  title: "Beacon Street Gardens LLC",
 };
 
 export default function RootLayout({

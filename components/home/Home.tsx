@@ -11,7 +11,7 @@ export default function Home() {
     /* Banner photo:
        Change link here to update banner photo
     */
-   const bannerSrc = "/flowers.jpg";
+   const bannerSrc = "/banner_seedlings.jpeg";
 
     /* For Shop By Category:
        Change values here to add a category or update labels, links, and images */
@@ -124,7 +124,7 @@ export default function Home() {
             {/* Farmer's market stand information */}
             <div className="relative flex flex-col md:flex-row max-w-6xl mx-auto mb-12 justify-center md:gap-10">
                 <div className="relative basis-1/2 w-full max-w-lg h-64">
-                    <Image src="/market.jpg" alt="photo of farmer's market stand" fill className="object-cover rounded-sm" />
+                    <Image src="/stand_photo.jpeg" alt="photo of farmer's market stand" fill className="object-cover rounded-sm" />
                 </div>
                 <div className="relative flex flex-col basis-1/2 px-6 items-start gap-3">
                     <h2 className="text-3xl font-medium">Visit Our Stand</h2>

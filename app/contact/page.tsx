@@ -132,7 +132,7 @@ export default function ContactPage() {
             <h2 className={`${contactStyles.h2}`}>Email</h2>
             <DecLine />
           </span>
-          <p className="mb-5">beaconstgardens@email.com</p>
+          <p className="mb-5">beaconstgardens@gmail.com</p>
 
           {/* Market hours */}
           <span className={`${contactStyles.infoSpan}`}>
