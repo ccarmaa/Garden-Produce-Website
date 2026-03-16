@@ -395,7 +395,7 @@ function ReservationRow({
 
   const collapseLabel = () => {
     if (reservation.status === "unconfirmed")
-      return `Submitted ${formatDate(reservation.created_at)}`;
+      return `Submitted ${formatDateTime(reservation.created_at)}`;
     if (reservation.status === "confirmed")
       return `Pickup: ${reservation.proposed_pickup || "—"}`;
     if (reservation.status === "completed")
@@ -772,9 +772,28 @@ export default function OrdersTab() {
     fetchReservations();
   }, []);
 
-  const unconfirmed = reservations.filter((r) => r.status === "unconfirmed");
-  const confirmed = reservations.filter((r) => r.status === "confirmed");
-  const completed = reservations.filter((r) => r.status === "completed");
+  const unconfirmed = reservations
+    .filter((r) => r.status === "unconfirmed")
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
+
+  const confirmed = reservations
+    .filter((r) => r.status === "confirmed")
+    .sort(
+      (a, b) =>
+        new Date(b.confirmed_at ?? b.created_at).getTime() -
+        new Date(a.confirmed_at ?? a.created_at).getTime(),
+    );
+
+  const completed = reservations
+    .filter((r) => r.status === "completed")
+    .sort(
+      (a, b) =>
+        new Date(b.completed_at ?? b.created_at).getTime() -
+        new Date(a.completed_at ?? a.created_at).getTime(),
+    );
 
   if (loading) {
     return (
