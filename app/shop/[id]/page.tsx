@@ -83,7 +83,7 @@ function ProductPageContent() {
           Back to Shop
         </Link>
 
-        {/* mobile only — name above image */}
+        {/* mobile only*/}
         <div className="sm:hidden mb-4">
           <p className="text-xs uppercase tracking-widest text-[var(--input-border)] mb-2">
             {product.category ?? "From the Garden"}
@@ -250,7 +250,7 @@ function ProductPageContent() {
             {product.sun && (
               <div className="flex items-baseline justify-between py-3 border-b border-dashed border-[var(--card-border)]">
                 <span className="text-xs uppercase tracking-widest text-[var(--input-border)]">
-                  Sun
+                  Sun (Outdoors)
                 </span>
                 <span className="text-sm text-[var(--text)]">
                   {product.sun}
@@ -260,7 +260,7 @@ function ProductPageContent() {
             {product.light && (
               <div className="flex items-baseline justify-between py-3 border-b border-dashed border-[var(--card-border)]">
                 <span className="text-xs uppercase tracking-widest text-[var(--input-border)]">
-                  Light
+                  Light (Indoors)
                 </span>
                 <span className="text-sm text-[var(--text)]">
                   {product.light}
