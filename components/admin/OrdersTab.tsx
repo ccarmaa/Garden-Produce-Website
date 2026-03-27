@@ -12,6 +12,8 @@ import {
   Trash2,
 } from "lucide-react";
 
+
+
 type ReservationItem = {
   id: string;
   product_id: string | null;
@@ -36,10 +38,428 @@ type Reservation = {
   reservation_items: ReservationItem[];
 };
 
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+function NewOrderModal({
+  onClose,
+  onSuccess,
+}: {
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const supabase = createClient();
+  const [form, setForm] = useState({ name: '', email: '', order_notes: '' });
+  const [dayTimes, setDayTimes] = useState<Record<string, string>>({});
+  const [pickupDate, setPickupDate] = useState('');
+  const [pickupStart, setPickupStart] = useState('');
+  const [pickupEnd, setPickupEnd] = useState('');
+  const [items, setItems] = useState<{ product_name: string; price: string; quantity: string }[]>([]);
+  const [status, setStatus] = useState<'unconfirmed' | 'confirmed' | 'completed'>('unconfirmed');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const calculatedTotal = items.reduce(
+    (sum, i) => sum + parseFloat(i.price || '0') * parseInt(i.quantity || '1'), 0
+  );
+  const [finalCost, setFinalCost] = useState('');
+  
+
+  const pickupTime = buildPickupString(pickupDate, pickupStart, pickupEnd);
+
+  const toggleDay = (day: string) => {
+    setDayTimes(prev => {
+      if (day in prev) { const next = { ...prev }; delete next[day]; return next; }
+      return { ...prev, [day]: '' };
+    });
+  };
+
+  const addItemRow = () =>
+    setItems(prev => [...prev, { product_name: '', price: '', quantity: '1' }]);
+
+  const removeItemRow = (i: number) =>
+    setItems(prev => prev.filter((_, idx) => idx !== i));
+
+  const updateItem = (i: number, field: string, value: string) =>
+    setItems(prev => prev.map((item, idx) => idx === i ? { ...item, [field]: value } : item));
+
+  const handleSubmit = async () => {
+    if (!form.name) { setError('Name is required.'); return; }
+    const validItems = items.filter(i => i.product_name.trim());
+
+    setSaving(true);
+    setError('');
+
+    const { data: reservation, error: resError } = await supabase
+      .from('reservations')
+      .insert({
+        name: form.name,
+        email: form.email || null,
+        order_notes: form.order_notes || null,
+        availability: Object.keys(dayTimes).length > 0 ? dayTimes : null,
+        proposed_pickup: pickupTime || null,
+        status,
+        final_cost: parseFloat(finalCost) || calculatedTotal || null,
+        confirmed_at: status === 'confirmed' || status === 'completed' ? new Date().toISOString() : null,
+        completed_at: status === 'completed' ? new Date().toISOString() : null,
+      })
+      .select()
+      .single();
+
+    if (resError || !reservation) {
+      setError('Failed to create reservation: ' + resError?.message);
+      setSaving(false);
+      return;
+    }
+
+    const itemRows = validItems.map(i => ({
+      reservation_id: reservation.id,
+      product_id: null,
+      product_name: i.product_name,
+      price: parseFloat(i.price) || 0,
+      quantity: parseInt(i.quantity) || 1,
+      is_custom: true,
+    }));
+
+    const { error: itemsError } = await supabase
+      .from('reservation_items')
+      .insert(itemRows);
+
+    if (itemsError) {
+      setError('Failed to add items: ' + itemsError.message);
+      setSaving(false);
+      return;
+    }
+    if (form.email) {
+      if (status === 'confirmed') {
+        await fetch('/api/send-pickup-confirmation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: form.name,
+            email: form.email,
+            pickupTime: pickupTime || null,
+            items: validItems.map(i => ({
+              product_name: i.product_name,
+              price: parseFloat(i.price || '0'),
+              quantity: parseInt(i.quantity || '1'),
+            })),
+            finalCost: parseFloat(finalCost) || calculatedTotal,
+          }),
+        });
+      } else if (status === 'completed') {
+        await fetch('/api/send-pickup-thanks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: form.name,
+            email: form.email,
+            items: validItems.map(i => ({
+              product_name: i.product_name,
+              price: parseFloat(i.price || '0'),
+              quantity: parseInt(i.quantity || '1'),
+            })),
+            finalCost: parseFloat(finalCost) || calculatedTotal,
+          }),
+        });
+      }
+    }
+
+    onSuccess();
+    onClose();
+    setSaving(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="relative bg-[var(--header)] rounded-lg shadow-xl border border-[var(--card-border)] w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        {/* sticky header */}
+        <div className="sticky top-0 bg-[var(--header)] border-b border-[var(--card-border)] px-6 py-4 flex items-center justify-between z-10">
+          <h2 className="text-lg font-semibold text-[var(--text)]">New Order</h2>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--card-bg)] hover:bg-[var(--card-border)] transition-colors text-[var(--text)]"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {/* customer info */}
+          <div>
+            <p className={labelClass}>Customer Info</p>
+            <div className="space-y-3">
+              <div>
+                <label className={labelClass}>Name <span className="text-[var(--rust)]">*</span></label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  className={inputClass}
+                  placeholder="Customer name"
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Email</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  className={inputClass}
+                  placeholder="customer@email.com"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* divider */}
+          <div className="border-t border-[var(--card-border)]" />
+
+          {/* items */}
+          <div>
+            <label className={labelClass}>Items</label>
+            
+            {items.length > 0 && (
+              <div className="space-y-2 mb-3">
+                {items.map((item, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <button
+                      onClick={() => removeItemRow(i)}
+                      className="text-[var(--input-border)] hover:text-[var(--rust)] transition-colors flex-shrink-0"
+                    >
+                      <X size={14} />
+                    </button>
+                    <span className="flex-1 text-sm text-[var(--text)]">{item.product_name}</span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => updateItem(i, 'quantity', String(Math.max(1, parseInt(item.quantity || '1') - 1)))}
+                        className="w-6 h-6 bg-[var(--button-gray)] hover:bg-[var(--button-gray-hover)] rounded flex items-center justify-center text-xs font-bold text-white transition-colors"
+                      >
+                        −
+                      </button>
+                      <span className="w-5 text-center text-sm text-[var(--text)]">{item.quantity}</span>
+                      <button
+                        onClick={() => updateItem(i, 'quantity', String(parseInt(item.quantity || '1') + 1))}
+                        className="w-6 h-6 bg-[var(--teal)] hover:bg-[var(--teal-hover)] rounded flex items-center justify-center text-xs font-bold text-white transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <span className="text-sm text-[var(--text)] w-16 text-right flex-shrink-0">
+                      ${(parseFloat(item.price || '0') * parseInt(item.quantity || '1')).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* add item row — reuses same search/custom pattern */}
+            <AddItemRow
+              reservationId="__new__"
+              onAdd={() => {}}
+              onAddItem={(item) =>
+                setItems(prev => [...prev, {
+                  product_name: item.product_name,
+                  price: String(item.price),
+                  quantity: String(item.quantity),
+                }])
+              }
+            />
+          </div>
+
+          {/* divider */}
+          <div className="border-t border-[var(--card-border)]" />
+
+          {/* proposed pickup */}
+          <div>
+            <label className={labelClass}>Proposed Pickup Time</label>
+            <div className="flex gap-2 items-center flex-wrap">
+              <input
+                type="date"
+                value={pickupDate}
+                onChange={e => setPickupDate(e.target.value)}
+                className="flex-1 min-w-[140px] px-3 py-2 bg-[var(--header)] border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--teal)] text-sm text-[var(--text)] cursor-pointer"
+              />
+              <select
+                value={pickupStart}
+                onChange={e => setPickupStart(e.target.value)}
+                className="flex-1 min-w-[110px] px-3 py-2 bg-[var(--header)] border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--teal)] text-sm text-[var(--text)] cursor-pointer"
+              >
+                <option value="">Start time</option>
+                {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <span className="text-sm text-[var(--input-border)]">–</span>
+              <select
+                value={pickupEnd}
+                onChange={e => setPickupEnd(e.target.value)}
+                className="flex-1 min-w-[110px] px-3 py-2 bg-[var(--header)] border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--teal)] text-sm text-[var(--text)] cursor-pointer"
+              >
+                <option value="">End time</option>
+                {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            {pickupTime && (
+              <p className="mt-1.5 text-xs text-[var(--input-border)]">{pickupTime}</p>
+            )}
+          </div>
+
+          {/* divider */}
+          <div className="border-t border-[var(--card-border)]" />
+
+          {/* customer availability */}
+          <div>
+            <label className={labelClass}>Customer Availability</label>
+            <div className="flex gap-2 flex-wrap mb-2">
+              {DAYS.map(day => (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => toggleDay(day)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+                    day in dayTimes
+                      ? 'bg-[var(--teal)] text-white border-[var(--teal)]'
+                      : 'bg-[var(--header)] text-[var(--text)] border-[var(--input-border)] hover:border-[var(--teal)]'
+                  }`}
+                >
+                  {day}
+                </button>
+              ))}
+            </div>
+            {Object.keys(dayTimes).length > 0 && (
+              <div className="space-y-2">
+                {Object.keys(dayTimes).map(day => (
+                  <div key={day} className="flex items-center gap-2">
+                    <span className="w-10 text-sm font-medium text-[var(--text)] flex-shrink-0">{day}</span>
+                    <input
+                      type="text"
+                      value={dayTimes[day]}
+                      onChange={e => setDayTimes(prev => ({ ...prev, [day]: e.target.value }))}
+                      placeholder="e.g. 11am–5pm"
+                      className="flex-1 px-3 py-1.5 bg-[var(--header)] border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--teal)] text-sm text-[var(--text)]"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* divider */}
+          <div className="border-t border-[var(--card-border)]" />
+
+          {/* order notes */}
+          <div>
+            <label className={labelClass}>Order Notes</label>
+            <textarea
+              value={form.order_notes}
+              onChange={e => setForm(f => ({ ...f, order_notes: e.target.value }))}
+              rows={2}
+              className={`${inputClass} resize-none`}
+              placeholder="Any special notes..."
+            />
+          </div>
+
+          {/* total */}
+          <div className="border-t border-[var(--card-border)]" />
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-[var(--text)]">Total</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-[var(--input-border)]">$</span>
+              <input
+                type="number"
+                step="0.01"
+                value={finalCost}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '' || /^\d+(\.\d{0,2})?$/.test(val)) setFinalCost(val);
+                }}
+                placeholder={calculatedTotal.toFixed(2)}
+                className="w-20 px-2 py-1 bg-[var(--header)] border border-[var(--input-border)] rounded-md text-sm text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--teal)]"
+              />
+              <button
+                onClick={() => setFinalCost(calculatedTotal.toFixed(2))}
+                className="text-xs text-[var(--input-border)] hover:text-[var(--teal)] transition-colors"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+
+          {/* status + submit */}
+          <div className="border-t border-[var(--card-border)]" />
+          <div>
+            <label className={labelClass}>Order Status</label>
+            <div className="flex gap-2 mb-4">
+              {(['unconfirmed', 'confirmed', 'completed'] as const).map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setStatus(s)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors capitalize ${
+                    status === s
+                      ? 'bg-[var(--teal)] text-white border-[var(--teal)]'
+                      : 'bg-[var(--header)] text-[var(--text)] border-[var(--input-border)] hover:border-[var(--teal)]'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+            {status !== 'unconfirmed' && !form.email && (
+              <p className="text-xs text-[var(--input-border)] mb-3">
+                No email provided. Confirmation email will not be sent.
+              </p>
+            )}
+            {error && <p className="text-sm text-[var(--rust)] mb-3">{error}</p>}
+            <button
+              onClick={handleSubmit}
+              disabled={saving}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-md font-medium text-sm transition-colors ${
+                saving
+                  ? 'bg-[var(--disabled-bg)] text-[var(--disabled-text)] cursor-not-allowed'
+                  : 'bg-[var(--rust)] hover:bg-[var(--dark-rust)] text-white'
+              }`}
+            >
+              {saving && <Loader2 size={15} className="animate-spin" />}
+              {saving ? 'Saving...' : 'Create Order'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const labelClass =
   "block text-xs uppercase tracking-widest text-[var(--input-border)] mb-1";
 const inputClass =
   "w-full px-3 py-2 bg-[var(--header)] border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--teal)] text-sm text-[var(--text)]";
+const TIME_SLOTS: string[] = [];
+for (let h = 6; h <= 21; h++) {
+  for (const m of [0, 30]) {
+    if (h === 21 && m === 30) break;
+    const hour12 = h % 12 === 0 ? 12 : h % 12;
+    const ampm = h < 12 ? "AM" : "PM";
+    TIME_SLOTS.push(`${hour12}:${m === 0 ? "00" : "30"} ${ampm}`);
+  }
+}
+
+function parsePickupString(s: string | null) {
+  if (!s) return { date: "", start: "", end: "" };
+  const [datePart, timePart] = s.split(" · ");
+  const [start, end] = (timePart ?? "").split(" – ");
+  return { date: datePart ?? "", start: start ?? "", end: end ?? "" };
+}
+
+function buildPickupString(date: string, start: string, end: string) {
+  if (!date && !start && !end) return "";
+  const datePart = date
+    ? new Date(date + "T12:00:00").toLocaleDateString("en-US", {
+        weekday: "short", month: "short", day: "numeric", year: "numeric",
+      })
+    : "";
+  const timePart = start && end ? `${start} – ${end}` : start || end || "";
+  if (datePart && timePart) return `${datePart} · ${timePart}`;
+  return datePart || timePart;
+}
 
 function formatDate(dateStr: string | null) {
   if (!dateStr) return "—";
@@ -64,9 +484,11 @@ function formatDateTime(dateStr: string | null) {
 function AddItemRow({
   reservationId,
   onAdd,
+  onAddItem,
 }: {
   reservationId: string;
   onAdd: () => void;
+  onAddItem?: (item: { product_name: string; price: number; quantity: number }) => void;
 }) {
   const supabase = createClient();
   const [mode, setMode] = useState<"search" | "custom">("search");
@@ -93,14 +515,18 @@ function AddItemRow({
 
   const handleAddProduct = async (product: any) => {
     setAdding(true);
-    await supabase.from("reservation_items").insert({
-      reservation_id: reservationId,
-      product_id: product.id,
-      product_name: product.name,
-      price: product.price,
-      quantity: 1,
-      is_custom: false,
-    });
+    if (onAddItem) {
+      onAddItem({ product_name: product.name, price: product.price, quantity: 1 });
+    } else {
+      await supabase.from("reservation_items").insert({
+        reservation_id: reservationId,
+        product_id: product.id,
+        product_name: product.name,
+        price: product.price,
+        quantity: 1,
+        is_custom: false,
+      });
+    }
     setQuery("");
     setResults([]);
     onAdd();
@@ -110,14 +536,18 @@ function AddItemRow({
   const handleAddCustom = async () => {
     if (!customName || !customPrice) return;
     setAdding(true);
-    await supabase.from("reservation_items").insert({
-      reservation_id: reservationId,
-      product_id: null,
-      product_name: customName,
-      price: parseFloat(customPrice),
-      quantity: parseInt(customQty) || 1,
-      is_custom: true,
-    });
+    if (onAddItem) {
+      onAddItem({ product_name: customName, price: parseFloat(customPrice), quantity: parseInt(customQty) || 1 });
+    } else {
+      await supabase.from("reservation_items").insert({
+        reservation_id: reservationId,
+        product_id: null,
+        product_name: customName,
+        price: parseFloat(customPrice),
+        quantity: parseInt(customQty) || 1,
+        is_custom: true,
+      });
+    }
     setCustomName("");
     setCustomPrice("");
     setCustomQty("1");
@@ -245,9 +675,15 @@ function ReservationRow({
   const [expanded, setExpanded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [pickupTime, setPickupTime] = useState(
-    reservation.proposed_pickup ?? "",
-  );
+  
+  const parsed = parsePickupString(reservation.proposed_pickup);
+  const [pickupDate, setPickupDate] = useState(() => {
+    const d = new Date(parsed.date);
+    return !isNaN(d.getTime()) ? d.toISOString().split("T")[0] : "";
+  });
+  const [pickupStart, setPickupStart] = useState(parsed.start);
+  const [pickupEnd, setPickupEnd] = useState(parsed.end);
+  const pickupTime = buildPickupString(pickupDate, pickupStart, pickupEnd);
   const [finalCost, setFinalCost] = useState<string>(
     reservation.final_cost?.toString() ?? "",
   );
@@ -486,18 +922,18 @@ function ReservationRow({
             <div className="space-y-2">
               {items.map((item) => (
                 <div key={item.id} className="flex items-center gap-3">
-                  {reservation.status !== "completed" && (
+                  
                     <button
                       onClick={() => handleRemoveItem(item.id)}
                       className="text-[var(--input-border)] hover:text-[var(--rust)] transition-colors flex-shrink-0"
                     >
                       <X size={14} />
                     </button>
-                  )}
+                  
                   <span className="flex-1 text-sm text-[var(--text)]">
                     {item.product_name}
                   </span>
-                  {reservation.status !== "completed" ? (
+                  
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() =>
@@ -519,11 +955,7 @@ function ReservationRow({
                         +
                       </button>
                     </div>
-                  ) : (
-                    <span className="text-sm text-[var(--input-border)]">
-                      ×{item.quantity}
-                    </span>
-                  )}
+                
                   <span className="text-sm text-[var(--text)] w-16 text-right flex-shrink-0">
                     ${(item.price * item.quantity).toFixed(2)}
                   </span>
@@ -532,7 +964,7 @@ function ReservationRow({
             </div>
 
             {/* add item */}
-            {reservation.status !== "completed" && (
+            
               <div>
                 {!showAddItem ? (
                   <button
@@ -560,7 +992,7 @@ function ReservationRow({
                   </div>
                 )}
               </div>
-            )}
+            
 
             {/* total */}
             <div className="flex items-center justify-between mt-4 pt-3 border-t border-[var(--card-border)]">
@@ -568,7 +1000,7 @@ function ReservationRow({
                 Total
               </span>
               <div className="flex items-center gap-2">
-                {reservation.status !== "completed" ? (
+                
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs text-[var(--input-border)]">
                       $
@@ -592,11 +1024,7 @@ function ReservationRow({
                       Reset
                     </button>
                   </div>
-                ) : (
-                  <span className="text-sm font-medium text-[var(--text)]">
-                    ${(parseFloat(finalCost) || calculatedTotal).toFixed(2)}
-                  </span>
-                )}
+                
               </div>
             </div>
             <div className="mt-5 pt-4 border-t border-[var(--card-border)]">
@@ -629,30 +1057,41 @@ function ReservationRow({
           </div>
 
           {/* pickup time */}
-          {reservation.status !== "completed" && (
+          
             <div className="mb-5">
               <label className={labelClass}>Proposed Pickup Time</label>
-              <input
-                type="text"
-                value={pickupTime}
-                onChange={(e) => setPickupTime(e.target.value)}
-                placeholder="e.g. Saturday March 15, 10am–12pm"
-                className={inputClass}
-              />
-            </div>
-          )}
-
-          {reservation.status === "completed" &&
-            reservation.proposed_pickup && (
-              <div className="mb-5">
-                <p className="text-xs uppercase tracking-widest text-[var(--input-border)] mb-1">
-                  Pickup Time
-                </p>
-                <p className="text-sm text-[var(--text)]">
-                  {reservation.proposed_pickup}
-                </p>
+              <div className="flex gap-2 items-center flex-wrap">
+                <input
+                  type="date"
+                  value={pickupDate}
+                  onChange={(e) => setPickupDate(e.target.value)}
+                  className="flex-1 min-w-[140px] px-3 py-2 bg-[var(--header)] border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--teal)] text-sm text-[var(--text)] cursor-pointer"
+                />
+                <select
+                  value={pickupStart}
+                  onChange={(e) => setPickupStart(e.target.value)}
+                  className="flex-1 min-w-[110px] px-3 py-2 bg-[var(--header)] border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--teal)] text-sm text-[var(--text)] cursor-pointer"
+                >
+                  <option value="">Start time</option>
+                  {TIME_SLOTS.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+                <span className="text-sm text-[var(--input-border)]">–</span>
+                <select
+                  value={pickupEnd}
+                  onChange={(e) => setPickupEnd(e.target.value)}
+                  className="flex-1 min-w-[110px] px-3 py-2 bg-[var(--header)] border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-1 focus:ring-[var(--teal)] text-sm text-[var(--text)] cursor-pointer"
+                >
+                  <option value="">End time</option>
+                  {TIME_SLOTS.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
               </div>
-            )}
+              {pickupTime && (
+                <p className="mt-1.5 text-xs text-[var(--input-border)]">{pickupTime}</p>
+              )}
+            </div>
+          
+
+          
 
           {/* error */}
           {error && <p className="text-sm text-[var(--rust)] mb-3">{error}</p>}
@@ -700,6 +1139,20 @@ function ReservationRow({
                 {saving ? "Completing..." : "Mark as Completed"}
               </button>
             </div>
+          )}
+          {reservation.status === "completed" && (
+            <button
+              onClick={handleSaveConfirmed}
+              disabled={saving}
+              className={`flex items-center gap-2 px-5 py-2 rounded-md text-sm font-medium transition-colors ${
+                saving
+                  ? "bg-[var(--disabled-bg)] text-[var(--disabled-text)] cursor-not-allowed"
+                  : "bg-[var(--teal)] hover:bg-[var(--teal-hover)] text-white"
+              }`}
+            >
+              {saving && <Loader2 size={14} className="animate-spin" />}
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
           )}
         </div>
       )}
@@ -757,6 +1210,7 @@ export default function OrdersTab() {
   const supabase = createClient();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
 
   const fetchReservations = async () => {
     const { data, error } = await supabase
@@ -778,22 +1232,22 @@ export default function OrdersTab() {
       (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
+  const parsePickupDate = (s: string | null) => {
+    if (!s) return 0;
+    const datePart = s.split(" · ")[0];
+    const d = new Date(datePart);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  };
 
   const confirmed = reservations
     .filter((r) => r.status === "confirmed")
     .sort(
-      (a, b) =>
-        new Date(b.confirmed_at ?? b.created_at).getTime() -
-        new Date(a.confirmed_at ?? a.created_at).getTime(),
-    );
+      (a, b) => parsePickupDate(a.proposed_pickup) - parsePickupDate(b.proposed_pickup));
 
   const completed = reservations
     .filter((r) => r.status === "completed")
     .sort(
-      (a, b) =>
-        new Date(b.completed_at ?? b.created_at).getTime() -
-        new Date(a.completed_at ?? a.created_at).getTime(),
-    );
+      (a, b) => parsePickupDate(a.proposed_pickup) - parsePickupDate(b.proposed_pickup));
 
   if (loading) {
     return (
@@ -805,7 +1259,16 @@ export default function OrdersTab() {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-[var(--text)] mb-8">Orders</h2>
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-lg font-semibold text-[var(--text)]">Orders</h2>
+        <button
+          onClick={() => setShowModal(true)}
+          className="flex items-center gap-2 bg-[var(--rust)] hover:bg-[var(--dark-rust)] text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+        >
+          <Plus size={15} />
+          New Order
+        </button>
+      </div>
       <ReservationSection
         title="Unconfirmed"
         reservations={unconfirmed}
@@ -821,6 +1284,12 @@ export default function OrdersTab() {
         reservations={completed}
         onUpdate={fetchReservations}
       />
+      {showModal && (
+        <NewOrderModal
+          onClose={() => setShowModal(false)}
+          onSuccess={fetchReservations}
+        />
+      )}
     </div>
   );
 }

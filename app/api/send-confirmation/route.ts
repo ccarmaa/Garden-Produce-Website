@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
           <!-- logo + header -->
           <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px;">
-            <img src="https://zcjkbrfiqelulixqjsjx.supabase.co/storage/v1/object/public/product-images/logo_beaconstgardens_noback.png" alt="Beacon Street Gardens" width="48" height="56" style="display: block;" />
+            <img src="https://zcjkbrfiqelulixqjsjx.supabase.co/storage/v1/object/public/product-images/logo_optimized.png" alt="Beacon Street Gardens" width="48" height="56" style="display: block;" />
             <div>
               <div style="padding-left: 10px; font-size: 20px; color: #4D5143; font-weight: 500;">\tBeacon Street Gardens</div>
               <div style="padding-left: 10px; font-size: 11px; color: #9D9389; letter-spacing: 2px; text-transform: uppercase;">\tLLC</div>

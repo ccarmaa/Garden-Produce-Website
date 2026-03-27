@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         <div style="font-family: Georgia, serif; max-width: 520px; margin: 0 auto; background: #F8F2F2; padding: 40px 32px;">
 
           <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px;">
-            <img src="https://zcjkbrfiqelulixqjsjx.supabase.co/storage/v1/object/public/product-images/logo_beaconstgardens_noback.png" alt="Beacon Street Gardens" width="48" height="56" style="display: block;" />
+            <img src="https://zcjkbrfiqelulixqjsjx.supabase.co/storage/v1/object/public/product-images/logo_optimized.png" alt="Beacon Street Gardens" width="48" height="56" style="display: block;" />
             <div>
               <div style="padding-left: 10px; font-size: 20px; color: #4D5143; font-weight: 500;">Beacon Street Gardens</div>
               <div style="padding-left: 10px; font-size: 11px; color: #9D9389; letter-spacing: 2px; text-transform: uppercase;">LLC</div>

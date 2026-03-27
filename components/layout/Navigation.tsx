@@ -55,14 +55,15 @@ export default function Navigation() {
         {/*logo*/}
         <Link
           href="/"
-          className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+          className="flex items-center space-x-0 md:space-x-3 hover:opacity-80 transition-opacity"
         >
-          {/* <Image src="/logo_beaconstgardens_icon.png" alt="Logo" width={150} height={173}/> */}
-          <Image
-            src="/logo_beaconstgardens_icon_noback.png"
+
+          <img
+            src="/logo.svg"
             alt="Logo"
-            width={52}
+            width={40}
             height={60}
+            className="hidden md:inline"
           />
           <span className="text-2xl font-medium text-[var(--text)]">
             Beacon Street Gardens{" "}

@@ -6,8 +6,10 @@ import { createClient } from '@/lib/supabase/client';
 import ProductsTab from '@/components/admin/ProductsTab';
 import OrdersTab from '@/components/admin/OrdersTab';
 import BlogTab from '@/components/admin/BlogTab';
+import CalendarTab from '@/components/admin/CalendarTab';
 
-const TABS = ['Products', 'Orders', 'Blog Posts'];
+
+const TABS = ['Products', 'Orders', 'Blog Posts', 'Calendar'];
 
 export default function AdminPage() {
   const router = useRouter();
@@ -55,6 +57,7 @@ export default function AdminPage() {
         {activeTab === 'Products' && <ProductsTab />}
         {activeTab === 'Orders' && <OrdersTab />}
         {activeTab === 'Blog Posts' && <BlogTab />}
+        {activeTab === 'Calendar' && <CalendarTab />}
 
       </div>
     </div>
