@@ -4,7 +4,7 @@ import ProductCard from "@/components/shop/ProductCard";
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/supabase";
-import { Loader2 } from "lucide-react";
+import { Loader2} from "lucide-react";
 
 export default function ShopPage() {
   const [allProducts, setAllProducts] = useState<any[]>([]);

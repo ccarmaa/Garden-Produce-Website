@@ -15,7 +15,7 @@ export default function AdminPage() {
   const router = useRouter();
   const supabase = createClient();
   const [activeTab, setActiveTab] = useState('Products');
-
+S
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push('/admin/login');
