@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/supabase";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, BadgeInfo } from "lucide-react";
 import { useCartStore } from "@/lib/store/cartStore";
 
 function ProductPageContent() {
@@ -13,6 +13,9 @@ function ProductPageContent() {
   const searchParams = useSearchParams();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  const [showSun, setShowSun] = useState(false);
+  const [showLight, setShowLight] = useState(false);
 
   const { items, addItem, updateQuantity } = useCartStore();
   const cartItem = items.find((i) => i.id === id);
@@ -248,13 +251,25 @@ function ProductPageContent() {
               </div>
             )}
             {product.sun && (
-              <div className="flex items-baseline justify-between py-3 border-b border-dashed border-[var(--card-border)]">
+              <div className="relative flex items-baseline justify-between py-3 border-b border-dashed border-[var(--card-border)]">
                 <span className="text-xs uppercase tracking-widest text-[var(--input-border)]">
                   Sun (Outdoors)
                 </span>
-                <span className="text-sm text-[var(--text)]">
+                <span className="flex gap-2 items-center text-sm text-[var(--text)]">
                   {product.sun}
+                  <div 
+                    onMouseEnter={() => setShowSun(true)}
+                    onMouseLeave={() => setShowSun(false)}
+                    className=""
+                  >
+                    <BadgeInfo size={16} color="var(--input-border)" />
+                  </div>
                 </span>
+                {showSun && (
+                  <div className="absolute bottom-10 right-0 text-xs max-w-sm p-2 rounded-md bg-[var(--card-bg)] border border-[var(--card-border)] shadow-md z-10">
+                    <p>Placeholder explanation of what different sun levels mean</p>
+                  </div>
+                )}
               </div>
             )}
             {product.light && (
@@ -262,9 +277,21 @@ function ProductPageContent() {
                 <span className="text-xs uppercase tracking-widest text-[var(--input-border)]">
                   Light (Indoors)
                 </span>
-                <span className="text-sm text-[var(--text)]">
+                <span className="flex gap-2 items-center text-sm text-[var(--text)]">
                   {product.light}
+                  <div 
+                    onMouseEnter={() => setShowLight(true)}
+                    onMouseLeave={() => setShowLight(false)}
+                    className="color-(--input-border) hover:color-(--lines)"
+                  >
+                    <BadgeInfo size={16} />
+                  </div>
                 </span>
+                {showLight && (
+                  <div className="absolute bottom-10 right-0 text-xs max-w-sm p-2 rounded-md bg-[var(--card-bg)] border border-[var(--card-border)] shadow-md z-10">
+                    <p>Placeholder explanation of what different light levels mean</p>
+                  </div>
+                )}
               </div>
             )}
             {product.watering && (
