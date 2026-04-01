@@ -1,8 +1,8 @@
-'use client'
-import { useState, useEffect } from 'react';
+"use client";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import Image from 'next/image';
-import Link from 'next/link';
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
     ChevronLeft,
@@ -23,11 +23,25 @@ const bannerSrc = "/banner_seedlings.jpeg";
 /* Shop By Category:
        Change values here to add a category or update labels, links, and images */
 const categories = [
-    { id: 1, href: '/shop?category=Vegetable/Fruit', label: 'Fruit & Vegetable Plants', image: '/pepper-photo.jpg' },
-    { id: 2, href: '/shop?category=Flowers', label: 'Flowers', image: '/colorful-flowers.jpg' },
-    { id: 3, href: '/shop?category=Herbs', label: 'Herbs', image: '/herb_photo.jpg' },
-    { id: 4, href: '/shop', label: 'Shop All', image: '/sprout_info.png' },
-    
+  {
+    id: 1,
+    href: "/shop?category=Vegetable/Fruit",
+    label: "Fruit & Vegetable Plants",
+    image: "/pepper-photo.jpg",
+  },
+  {
+    id: 2,
+    href: "/shop?category=Flowers",
+    label: "Flowers",
+    image: "/colorful-flowers.jpg",
+  },
+  {
+    id: 3,
+    href: "/shop?category=Herbs",
+    label: "Herbs",
+    image: "/herb_photo.jpg",
+  },
+  { id: 4, href: "/shop", label: "Shop All", image: "/sprout_info.png" },
 ];
 
 function formatDate(dateStr: string | null) {
@@ -57,17 +71,19 @@ export default function Home() {
         }
     }
 
-    const handleBlogNext = () => {
-        const nextIndex = (postIndex+1)%posts.length;
-        setPostIndex(nextIndex);
+  const handleBlogPrev = () => {
+    const nextIndex = postIndex - 1;
+    if (nextIndex < 0) {
+      setPostIndex(posts.length - 1);
+    } else {
+      setPostIndex(nextIndex);
     }
+  };
 
-    const fetchPosts = async () => {
-        const { data, error } = await supabase
-        .from("blog_posts")
-        .select("*")
-        .eq("published", true)
-        .order("created_at", { ascending: false });
+  const handleBlogNext = () => {
+    const nextIndex = (postIndex + 1) % posts.length;
+    setPostIndex(nextIndex);
+  };
 
         if (!error) setPosts(data || []);
         setLoading(false);
@@ -97,6 +113,7 @@ export default function Home() {
                 </div>
             </div>
         </div>
+      </div>
 
         {/* Info Blurb */}
         <div className="bg-(--secondary)">
@@ -195,7 +212,7 @@ export default function Home() {
                             </button>
                         </div>
                     </div>
-                )}
+                  )}
                 </div>
                 <button 
                     onClick={handleBlogNext} 
@@ -271,7 +288,39 @@ export default function Home() {
                 </ul>
             </div>
 
+        {/* Shop by category */}
+        <div className="relative max-w-6xl mx-auto text-center">
+          <div className="relative flex mb-12 gap-4 items-center">
+            <hr className="w-full border-0 h-[3px] bg-(--card-border)" />
+            <h2 className="text-3xl text-nowrap font-medium">
+              Shop by Category
+            </h2>
+            <hr className="w-full border-0 h-[3px] bg-(--card-border)" />
+          </div>
+          <ul className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {categories.map((category) => (
+              <li key={category.id} className="relative bg-[var(--card-bg)]">
+                <Link
+                  href={category.href}
+                  className="flex flex-col w-full aspect-square overflow-hidden rounded-md"
+                >
+                  <div className="relative h-full w-full bg-(--card-border)">
+                    <Image
+                      src={category.image}
+                      alt="photo of seedling"
+                      fill
+                      className="object-cover hover:scale-105 transition-transform duration-300 overflow-hidden"
+                    />
+                  </div>
+                  <div className="relative text-sm md:text-lg text-(--header) bg-(--teal-hover) p-1">
+                    <p>{category.label}</p>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
+      </div>
     </div>
   );
 }
