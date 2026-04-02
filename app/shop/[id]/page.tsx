@@ -112,7 +112,7 @@ function ProductPageContent() {
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Image
-                  src="/no_item.svg"
+                  src="/no-image.png"
                   alt="No Item"
                   width={100}
                   height={100}
